@@ -14,12 +14,14 @@ REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN")
 
 NEGATIVE_PROMPT = (
     "fisheye lens, wide angle distortion, tilted perspective, warped walls, "
-    "neon lights, blue LED, purple lighting, dramatic colored lighting, HDR, over-processed, "
-    "oversaturated, surreal, fantasy, sci-fi, futuristic glow, "
+    "neon lights, green LED, blue LED, purple LED, RGB lighting, colored lights, "
+    "dramatic colored lighting, HDR, over-processed, oversaturated, "
+    "surreal, fantasy, sci-fi, futuristic glow, gaming room, "
     "cartoon, illustration, drawing, painting, render, CGI look, "
     "watermark, text, signature, logo, low quality, blurry, noisy, "
-    "deformed furniture, floating objects, bad proportions, unrealistic scale, "
-    "moved furniture, different furniture, missing furniture, empty room, changed floor"
+    "moved furniture, missing furniture, replaced furniture, removed wardrobe, "
+    "added window, changed door, empty room, changed floor, different bed, "
+    "floating objects, bad proportions, unrealistic scale, demolished walls"
 )
 
 
@@ -50,8 +52,8 @@ async def generate_image_stability(prompt: str, negative_prompt: Optional[str] =
                     "text_prompts[0][weight]": "1",
                     "text_prompts[1][text]": negative_prompt or NEGATIVE_PROMPT,
                     "text_prompts[1][weight]": "-1",
-                    "image_strength": "0.45",
-                    "cfg_scale": "10",
+                    "image_strength": "0.50",
+                    "cfg_scale": "8",
                     "steps": "50",
                     "samples": "1",
                 },

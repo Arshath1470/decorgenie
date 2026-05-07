@@ -68,7 +68,7 @@ Return ONLY a JSON object with these exact keys:
     "Material or maintenance insight",
     "Cost-saving or quality-upgrade tip"
   ],
-  "ai_image_prompt": "interior design photo, {style} style bedroom, [describe the NEW wall paint color and finish, NEW ceiling design with cove lighting or false ceiling details], keep all furniture beds wardrobes TV exactly in same position, only walls and ceiling are redesigned, bright warm lighting, photorealistic, professional interior photography, 8k"
+  "ai_image_prompt": "photorealistic interior design, {style} style {room_type}, same room same furniture same wardrobe same bed same TV in exact same positions, ONLY the walls repainted to [specific wall color from palette] with [wall texture/finish], ONLY the ceiling redesigned with [false ceiling type, warm white recessed lighting, no colored LEDs], warm white natural lighting, real estate photography, sharp focus, 8k, no color grading"
 }}"""
 
 
