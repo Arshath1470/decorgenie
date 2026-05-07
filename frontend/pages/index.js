@@ -47,6 +47,7 @@ export default function Home() {
     <>
       <Head>
         <title>DecorGenie AI — AI Interior Designer for Indian Homes</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
         <meta name="description" content="Upload a room photo and get instant AI redesigns, color palettes, Vastu tips, furniture layouts, and renovation budgets tailored for Indian homes." />
         <meta property="og:title" content="DecorGenie AI — Your Room, Reimagined" />
         <meta property="og:description" content="AI-powered interior design for Indian homes. Upload a photo, choose a style, get a redesign." />
