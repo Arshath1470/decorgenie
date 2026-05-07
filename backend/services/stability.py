@@ -4,8 +4,9 @@ import base64
 import httpx
 import replicate
 from openai import OpenAI
-from PIL import Image
+from PIL import Image, ImageFilter, ImageDraw
 from typing import Optional
+import numpy as np
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -147,24 +148,122 @@ async def generate_image_dalle(prompt: str) -> str:
     return response.data[0].url
 
 
+def _make_wall_mask(img_rgba: Image.Image) -> Image.Image:
+    """
+    Generate an inpaint mask for walls + ceiling.
+    Transparent (alpha=0)  → repaint this area  (walls / ceiling)
+    Opaque (alpha=255)     → keep this area      (furniture / floor)
+    Strategy: top 35% = ceiling. Remaining area: identify "wall-like" regions
+    by high brightness (>160) — dark furniture/floor will be preserved.
+    Edges of mask are feathered for seamless blending.
+    """
+    w, h = img_rgba.size
+    arr = np.array(img_rgba.convert("RGBA"))
+
+    # Start: everything opaque (keep everything)
+    alpha = np.full((h, w), 255, dtype=np.uint8)
+
+    # ── Ceiling band: top 35 % ──────────────────────────────────────────────
+    alpha[: int(h * 0.35), :] = 0
+
+    # ── Wall detection in the lower 65 %: bright flat areas are walls ───────
+    lower = arr[int(h * 0.35) :, :, :3]
+    brightness = lower.mean(axis=2)           # (lower_h, w)
+    is_bright = brightness > 155              # bright pixels likely wall
+
+    # Only mark left & right thirds as potential wall (centre = furniture/bed)
+    left_third  = int(w * 0.25)
+    right_third = int(w * 0.75)
+    side_mask = np.zeros_like(is_bright, dtype=bool)
+    side_mask[:, :left_third]  = True
+    side_mask[:, right_third:] = True
+    # Also include any bright strip in the upper-lower region (above bed height)
+    upper_lower = int(lower.shape[0] * 0.5)
+    side_mask[:upper_lower, :] = True         # full width in upper portion
+
+    wall_pixels = is_bright & side_mask
+    alpha[int(h * 0.35) :][wall_pixels] = 0
+
+    # ── Build PIL image and feather edges ───────────────────────────────────
+    mask_img = img_rgba.copy().convert("RGBA")
+    rgba_arr = np.array(mask_img)
+    rgba_arr[:, :, 3] = alpha
+    mask_out = Image.fromarray(rgba_arr, "RGBA")
+
+    # Slight blur on the alpha channel so mask edges blend naturally
+    r, g, b, a = mask_out.split()
+    a = a.filter(ImageFilter.GaussianBlur(radius=12))
+    mask_out = Image.merge("RGBA", (r, g, b, a))
+    return mask_out
+
+
+async def generate_image_dalle_inpaint(prompt: str, image_base64: str) -> str:
+    """
+    Use DALL-E 2 inpainting to repaint ONLY walls + ceiling.
+    The mask keeps furniture / floor pixel-perfect.
+    """
+    if not OPENAI_API_KEY:
+        raise ValueError("OPENAI_API_KEY not set")
+
+    # Prepare 1024×1024 RGBA original
+    img_bytes = base64.b64decode(image_base64)
+    img = Image.open(io.BytesIO(img_bytes)).convert("RGBA").resize((1024, 1024), Image.LANCZOS)
+
+    # Build wall+ceiling mask
+    mask = _make_wall_mask(img)
+
+    # Serialise both as PNG (DALL-E 2 edit requires PNG with alpha)
+    orig_buf = io.BytesIO()
+    img.save(orig_buf, format="PNG")
+    orig_buf.seek(0)
+
+    mask_buf = io.BytesIO()
+    mask.save(mask_buf, format="PNG")
+    mask_buf.seek(0)
+
+    inpaint_prompt = (
+        f"{prompt}. "
+        "Photorealistic interior, smooth freshly painted walls, warm white recessed ceiling lights, "
+        "natural daylight, professional real estate photography, no colored LEDs, no neon."
+    )
+
+    oai = OpenAI(api_key=OPENAI_API_KEY)
+    response = oai.images.edit(
+        model="dall-e-2",
+        image=orig_buf,
+        mask=mask_buf,
+        prompt=inpaint_prompt,
+        n=1,
+        size="1024x1024",
+    )
+    return response.data[0].url
+
+
 async def generate_image(prompt: str, negative_prompt: Optional[str] = None, image_base64: Optional[str] = None) -> dict:
     """
     If source image provided: use Stability/Replicate img2img (preserves original room).
     If no source image: try DALL-E 3 first for best quality text-to-image.
     """
     if image_base64:
-        # img2img path — Replicate uses ControlNet depth (better geometry/furniture preservation)
-        # Fall back to Stability plain img2img if Replicate unavailable
+        # img2img path — DALL-E 2 inpaint uses an exact wall/ceiling mask = perfect furniture preservation
+        if OPENAI_API_KEY:
+            try:
+                url = await generate_image_dalle_inpaint(prompt, image_base64)
+                return {"image_url": url, "provider": "dalle2_inpaint"}
+            except Exception as e:
+                print(f"DALL-E 2 inpaint failed: {e}, trying Replicate...")
+        # Replicate ControlNet depth — preserves room geometry well
         if REPLICATE_API_TOKEN:
             try:
                 url = await generate_image_replicate(prompt, negative_prompt, image_base64)
                 return {"image_url": url, "provider": "replicate"}
             except Exception as e:
                 print(f"Replicate img2img failed: {e}, trying Stability...")
+        # Last resort: Stability plain img2img
         if STABILITY_API_KEY:
             url = await generate_image_stability(prompt, negative_prompt, image_base64)
             return {"image_url": url, "provider": "stability"}
-        raise ValueError("No img2img API configured. Set REPLICATE_API_TOKEN or STABILITY_API_KEY.")
+        raise ValueError("No img2img API configured. Set OPENAI_API_KEY, REPLICATE_API_TOKEN or STABILITY_API_KEY.")
     else:
         # text-to-image path — DALL-E 3 gives best results
         if OPENAI_API_KEY:
