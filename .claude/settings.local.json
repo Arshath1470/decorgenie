@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Invoke-RestMethod -Uri \"http://127.0.0.1:8000/health\" -Method GET -TimeoutSec 5 2>&1)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/docs\" -TimeoutSec 5; \"Status: $\\($r.StatusCode\\)\" } catch { \"Error: $_\" })",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/docs --max-time 5)",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/design/generate -H 'Content-Type: application/json' -d '{\"style\":\"Modern\",\"room_type\":\"Living Room\",\"budget\":\"under 2 lakhs\",\"room_size\":250}' --max-time 60)"
+    ]
+  }
+}
