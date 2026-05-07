@@ -3,6 +3,6 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "rewrites": [
-    { "source": "/api/backend/:path*", "destination": "https://your-backend.railway.app/api/:path*" }
+    { "source": "/api/backend/:path*", "destination": "https://decorgenie-production.up.railway.app/api/:path*" }
   ]
 }
