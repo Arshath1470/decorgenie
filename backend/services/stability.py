@@ -29,10 +29,14 @@ NEGATIVE_PROMPT = (
 
 
 def resize_to_sdxl(image_base64: str) -> bytes:
-    """Resize image to 1024x1024 as required by SDXL."""
+    """Resize image to 1024x1024 and enhance brightness for better SDXL results."""
+    from PIL import ImageEnhance
     img_bytes = base64.b64decode(image_base64)
     img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
     img = img.resize((1024, 1024), Image.LANCZOS)
+    # Boost brightness slightly so model can work better with dark room photos
+    img = ImageEnhance.Brightness(img).enhance(1.25)
+    img = ImageEnhance.Contrast(img).enhance(1.1)
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=90)
     return buf.getvalue()
@@ -55,8 +59,8 @@ async def generate_image_stability(prompt: str, negative_prompt: Optional[str] =
                     "text_prompts[0][weight]": "1",
                     "text_prompts[1][text]": negative_prompt or NEGATIVE_PROMPT,
                     "text_prompts[1][weight]": "-1",
-                    "image_strength": "0.55",
-                    "cfg_scale": "7",
+                    "image_strength": "0.38",
+                    "cfg_scale": "9",
                     "steps": "50",
                     "samples": "1",
                 },
