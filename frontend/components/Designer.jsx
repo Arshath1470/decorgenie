@@ -115,7 +115,16 @@ export default function Designer({ user, token, onOpenAuth }) {
         await saveDesign({ designData: res.data, style, room_type: room, budget, room_size: roomSizeValue, notes, token });
       } catch (_) {}
     } catch (err) {
-      toast.error(err.message || "Generation failed. Please try again.");
+      const msg = err.message || "";
+      if (msg.includes("INVALID_IMAGE") || msg.includes("doesn't appear to be a room")) {
+        toast.error(
+          "Please upload a clear photo of your room (living room, bedroom, kitchen, etc.). " +
+          "Make sure it's well-lit and shows the full room.",
+          { duration: 6000 }
+        );
+      } else {
+        toast.error(msg || "Generation failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

@@ -72,6 +72,38 @@ Return ONLY a JSON object with these exact keys:
 }}"""
 
 
+async def validate_room_image(image_base64: str, media_type: str) -> dict:
+    """Check if the image is a valid room/interior photo. Returns {valid, message}."""
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=150,
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "source": {"type": "base64", "media_type": media_type, "data": image_base64},
+                },
+                {
+                    "type": "text",
+                    "text": (
+                        "Is this image a photograph of an indoor room or interior space "
+                        "(e.g. living room, bedroom, kitchen, office, dining room, bathroom, corridor)? "
+                        "Reply with ONLY a JSON object: "
+                        "{\"valid\": true/false, \"reason\": \"one short sentence\"}"
+                    ),
+                },
+            ],
+        }],
+    )
+    raw = response.content[0].text.strip()
+    try:
+        clean = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        return json.loads(clean)
+    except Exception:
+        return {"valid": True, "reason": ""}
+
+
 async def generate_design(request: DesignRequest) -> dict:
     """Generate a complete interior design plan using Claude."""
 
@@ -117,6 +149,16 @@ async def generate_design(request: DesignRequest) -> dict:
             }.get(fmt.upper(), "image/jpeg")
         except Exception:
             media_type = "image/jpeg"
+
+        # Validate image is an actual room photo
+        validation = await validate_room_image(request.image_base64, media_type)
+        if not validation.get("valid", True):
+            raise ValueError(
+                "INVALID_IMAGE: The photo doesn't appear to be a room or interior space. "
+                "Please upload a clear photo of your room (living room, bedroom, kitchen, office, etc.) "
+                "for best results. Make sure the image is well-lit and shows the full room clearly."
+            )
+
         content.append({
             "type": "image",
             "source": {
