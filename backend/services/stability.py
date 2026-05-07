@@ -20,11 +20,14 @@ NEGATIVE_PROMPT = (
     "cartoon, illustration, drawing, painting, render, CGI look, "
     "watermark, text, signature, logo, low quality, blurry, noisy, "
     "moved furniture, missing furniture, replaced furniture, removed wardrobe, "
+    "open wardrobe, open shelving, clothes visible, changed wardrobe design, "
+    "open cabinet, different wardrobe, wardrobe doors open, "
     "added window, changed door, empty room, changed floor, different bed, "
     "floating objects, bad proportions, unrealistic scale, demolished walls, "
     "hallucinated mirror reflection, neon in mirror, city in mirror, "
     "3D wall panels, extreme texture, embossed walls, stone wall, brick wall, "
-    "overly dramatic, dark shadows, underexposed"
+    "overly dramatic, dark shadows, underexposed, purple accent light, "
+    "pink led, magenta light, colored under-bed lighting"
 )
 
 
@@ -59,8 +62,8 @@ async def generate_image_stability(prompt: str, negative_prompt: Optional[str] =
                     "text_prompts[0][weight]": "1",
                     "text_prompts[1][text]": negative_prompt or NEGATIVE_PROMPT,
                     "text_prompts[1][weight]": "-1",
-                    "image_strength": "0.50",
-                    "cfg_scale": "12",
+                    "image_strength": "0.65",
+                    "cfg_scale": "15",
                     "steps": "50",
                     "samples": "1",
                 },
@@ -112,7 +115,7 @@ async def generate_image_replicate(prompt: str, negative_prompt: Optional[str] =
         tmp.flush()
         tmp.close()
         inp["image"] = pathlib.Path(tmp.name).open("rb")
-        inp["prompt_strength"] = 0.55  # 55% deviation — enough to change walls
+        inp["prompt_strength"] = 0.7   # ControlNet preserves geometry; 0.7 gives visible wall/ceiling changes
     else:
         inp["prompt_strength"] = 0.8
 
@@ -150,17 +153,18 @@ async def generate_image(prompt: str, negative_prompt: Optional[str] = None, ima
     If no source image: try DALL-E 3 first for best quality text-to-image.
     """
     if image_base64:
-        # img2img path — skip DALL-E (doesn't support img2img), go straight to Stability
-        if STABILITY_API_KEY:
-            try:
-                url = await generate_image_stability(prompt, negative_prompt, image_base64)
-                return {"image_url": url, "provider": "stability"}
-            except Exception as e:
-                print(f"Stability img2img failed: {e}, trying Replicate...")
+        # img2img path — Replicate uses ControlNet depth (better geometry/furniture preservation)
+        # Fall back to Stability plain img2img if Replicate unavailable
         if REPLICATE_API_TOKEN:
-            url = await generate_image_replicate(prompt, negative_prompt, image_base64)
-            return {"image_url": url, "provider": "replicate"}
-        raise ValueError("No img2img API configured. Set STABILITY_API_KEY or REPLICATE_API_TOKEN.")
+            try:
+                url = await generate_image_replicate(prompt, negative_prompt, image_base64)
+                return {"image_url": url, "provider": "replicate"}
+            except Exception as e:
+                print(f"Replicate img2img failed: {e}, trying Stability...")
+        if STABILITY_API_KEY:
+            url = await generate_image_stability(prompt, negative_prompt, image_base64)
+            return {"image_url": url, "provider": "stability"}
+        raise ValueError("No img2img API configured. Set REPLICATE_API_TOKEN or STABILITY_API_KEY.")
     else:
         # text-to-image path — DALL-E 3 gives best results
         if OPENAI_API_KEY:
