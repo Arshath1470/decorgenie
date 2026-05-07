@@ -59,8 +59,8 @@ async def generate_image_stability(prompt: str, negative_prompt: Optional[str] =
                     "text_prompts[0][weight]": "1",
                     "text_prompts[1][text]": negative_prompt or NEGATIVE_PROMPT,
                     "text_prompts[1][weight]": "-1",
-                    "image_strength": "0.38",
-                    "cfg_scale": "9",
+                    "image_strength": "0.50",
+                    "cfg_scale": "12",
                     "steps": "50",
                     "samples": "1",
                 },
@@ -95,17 +95,30 @@ async def generate_image_replicate(prompt: str, negative_prompt: Optional[str] =
 
     os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
 
-    # Always use the interior-design specific model for best photorealistic results
+    inp: dict = {
+        "prompt": prompt,
+        "negative_prompt": negative_prompt or NEGATIVE_PROMPT,
+        "guidance_scale": 15,
+        "num_inference_steps": 50,
+        "num_outputs": 1,
+    }
+
+    if image_base64:
+        # img2img: pass image + lower prompt_strength so furniture is mostly preserved
+        img_bytes = resize_to_sdxl(image_base64)
+        import tempfile, pathlib
+        tmp = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+        tmp.write(img_bytes)
+        tmp.flush()
+        tmp.close()
+        inp["image"] = pathlib.Path(tmp.name).open("rb")
+        inp["prompt_strength"] = 0.55  # 55% deviation — enough to change walls
+    else:
+        inp["prompt_strength"] = 0.8
+
     output = replicate.run(
         "adirik/interior-design:76604baddc85b1b4616e1c6475eca080da339c8875bd4996705440484a6eac38",
-        input={
-            "prompt": prompt,
-            "negative_prompt": negative_prompt or NEGATIVE_PROMPT,
-            "guidance_scale": 15,
-            "prompt_strength": 0.8,
-            "num_inference_steps": 50,
-            "num_outputs": 1,
-        },
+        input=inp,
     )
 
     return str(output[0])

@@ -68,7 +68,7 @@ Return ONLY a JSON object with these exact keys:
     "Material or maintenance insight",
     "Cost-saving or quality-upgrade tip"
   ],
-  "ai_image_prompt": "photorealistic {style} {room_type} interior, same existing furniture and wardrobe untouched, walls painted [wall color e.g. warm white/greige/sage] with smooth matte finish, clean false ceiling with warm white recessed spotlights only, well-lit with warm white light, real estate photo, sharp, realistic, no extreme textures, no colored lights"
+  "ai_image_prompt": "photorealistic {style} {room_type} interior redesign, ONLY the walls and ceiling are changed, all original furniture stays in exact same position untouched, walls repainted in [FILL IN: specific hex color and name from your palette, e.g. soft sage green #A8B89A or warm ivory #F5EED8], smooth matte paint finish on walls, clean flat white false ceiling with recessed warm white spotlights, bright warm white ambient lighting 4000K, eye-level camera angle, professional real estate photography, sharp focus, no fisheye, no colored lights, no neon"
 }}"""
 
 
