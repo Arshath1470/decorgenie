@@ -33,7 +33,7 @@ const BUDGETS = [
 
 const THEME_COLORS = ["#D4A84B","#2D6A4F","#1D3557","#C1121F","#6D4C41","#7B2D8B","#E76F51","#264653"];
 
-export default function Designer({ user, token }) {
+export default function Designer({ user, token, onOpenAuth }) {
   const [inputMode, setInputMode] = useState("photo"); // "photo" | "dimensions"
   const [imageFile, setImageFile] = useState(null);
   const [imageDataURL, setImageDataURL] = useState(null);
@@ -81,6 +81,11 @@ export default function Designer({ user, token }) {
     : 250;
 
   const handleGenerate = async () => {
+    if (!token) {
+      toast("Sign in to generate your AI design ✦", { icon: "🔑" });
+      onOpenAuth?.("signup");
+      return;
+    }
     if (inputMode === "photo" && !imageDataURL) {
       toast.error("Please upload a room photo first");
       return;
@@ -105,6 +110,10 @@ export default function Designer({ user, token }) {
       });
       setDesign(res.data);
       toast.success("Design generated!");
+      // Auto-save to database
+      try {
+        await saveDesign({ designData: res.data, style, room_type: room, budget, room_size: roomSizeValue, notes, token });
+      } catch (_) {}
     } catch (err) {
       toast.error(err.message || "Generation failed. Please try again.");
     } finally {
@@ -404,18 +413,12 @@ export default function Designer({ user, token }) {
               onMouseEnter={(e) => !loading && (e.currentTarget.style.transform = "translateY(-1px)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
-              {loading ? "⏳ Generating your design…" : "✦ Generate AI Design"}
+              {loading ? "⏳ Generating your design…" : token ? "✦ Generate AI Design" : "🔑 Sign in to Generate"}
             </button>
-            {design && (
-              <button onClick={handleSave} style={{
-                width: "100%", padding: "0.65rem", marginTop: "0.5rem",
-                background: "transparent", color: "#D4A84B",
-                border: "1px solid rgba(212,168,75,0.25)", borderRadius: "10px",
-                fontFamily: "'Outfit', sans-serif", fontSize: "0.82rem", cursor: "pointer",
-                transition: "all 0.2s",
-              }}>
-                💾 Save Design {!user && <span style={{ opacity: 0.6, fontSize: "0.75rem" }}>(sign in required)</span>}
-              </button>
+            {design && user && (
+              <div style={{ textAlign: "center", fontSize: "0.72rem", color: "#3D7A52", marginTop: "0.4rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.3rem" }}>
+                ✓ Design auto-saved to your account
+              </div>
             )}
           </div>
         </div>

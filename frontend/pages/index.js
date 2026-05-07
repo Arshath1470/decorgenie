@@ -126,7 +126,7 @@ export default function Home() {
         <SectionLabel>Designer</SectionLabel>
         <SectionTitle>AI Interior Designer</SectionTitle>
         <p style={{ color: "#A89880", fontSize: "0.95rem", marginBottom: "2.5rem" }}>Upload your room photo and get a complete redesign in under 30 seconds.</p>
-        <Designer user={user} token={token} />
+        <Designer user={user} token={token} onOpenAuth={setAuthModal} />
       </section>
 
       {/* PRICING */}
