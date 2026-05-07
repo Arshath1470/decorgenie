@@ -18,7 +18,8 @@ NEGATIVE_PROMPT = (
     "oversaturated, surreal, fantasy, sci-fi, futuristic glow, "
     "cartoon, illustration, drawing, painting, render, CGI look, "
     "watermark, text, signature, logo, low quality, blurry, noisy, "
-    "deformed furniture, floating objects, bad proportions, unrealistic scale"
+    "deformed furniture, floating objects, bad proportions, unrealistic scale, "
+    "moved furniture, different furniture, missing furniture, empty room, changed floor"
 )
 
 
@@ -49,8 +50,8 @@ async def generate_image_stability(prompt: str, negative_prompt: Optional[str] =
                     "text_prompts[0][weight]": "1",
                     "text_prompts[1][text]": negative_prompt or NEGATIVE_PROMPT,
                     "text_prompts[1][weight]": "-1",
-                    "image_strength": "0.65",
-                    "cfg_scale": "6",
+                    "image_strength": "0.45",
+                    "cfg_scale": "10",
                     "steps": "50",
                     "samples": "1",
                 },
