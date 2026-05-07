@@ -59,6 +59,13 @@ body {
 
 /* ── RESPONSIVE LAYOUT CLASSES ── */
 
+/* Pricing 3-col */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
 /* Designer: 2-col → stacked */
 .designer-layout {
   display: grid;
@@ -139,4 +146,10 @@ body {
   }
 
   .hide-mobile { display: none !important; }
+
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+    max-width: 400px;
+    margin: 0 auto;
+  }
 }

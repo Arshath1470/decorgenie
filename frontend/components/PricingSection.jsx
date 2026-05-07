@@ -54,7 +54,7 @@ export default function PricingSection({ user }) {
   };
 
   return (
-    <section id="pricing" style={{ padding: "4rem 0", maxWidth: 1000, margin: "0 auto" }}>
+    <section id="pricing" style={{ padding: "4rem 1.25rem", maxWidth: 1000, margin: "0 auto" }}>
       <div style={{ marginBottom: "0.5rem" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", color: "#D4A84B", fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
           <span style={{ display: "inline-block", width: 20, height: 1, background: "#D4A84B" }} />
@@ -66,7 +66,7 @@ export default function PricingSection({ user }) {
       </div>
       <p style={{ color: "#A89880", fontSize: "0.95rem", marginBottom: "2.5rem" }}>Start free. Upgrade when you need more.</p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
+      <div className="pricing-grid">
         {PLANS.map((plan) => (
           <div key={plan.name} style={{
             background: plan.featured ? "#1E1B16" : "#161410",
