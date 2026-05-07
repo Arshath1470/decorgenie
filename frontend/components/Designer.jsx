@@ -149,7 +149,7 @@ export default function Designer({ user, token }) {
         </span>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", minHeight: 580 }}>
+      <div className="designer-layout">
         {/* LEFT — preview & results */}
         <div style={{ padding: "1.75rem", borderRight: "1px solid rgba(212,168,75,0.08)" }}>
 

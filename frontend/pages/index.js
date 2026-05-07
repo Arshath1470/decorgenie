@@ -56,7 +56,7 @@ export default function Home() {
       <Navbar onOpenAuth={setAuthModal} />
 
       {/* HERO */}
-      <section style={{ minHeight: "88vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "3rem 2rem", position: "relative", overflow: "hidden" }}>
+      <section style={{ minHeight: "88vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "3rem 1.25rem", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(212,168,75,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(212,168,75,0.1)", border: "1px solid rgba(212,168,75,0.3)", borderRadius: "20px", padding: "0.3rem 0.9rem", fontSize: "0.75rem", color: "#D4A84B", marginBottom: "1.5rem", letterSpacing: "0.05em" }}>
           ✦ AI-Powered Interior Design for Indian Homes
@@ -75,7 +75,7 @@ export default function Home() {
             See features →
           </button>
         </div>
-        <div style={{ display: "flex", gap: "3rem", justifyContent: "center", marginTop: "3rem", paddingTop: "2.5rem", borderTop: "1px solid rgba(212,168,75,0.1)" }}>
+        <div className="hero-stats">
           {[["12K+", "Rooms Redesigned"], ["9", "Design Styles"], ["₹2L–10L", "Budget Range"], ["Vastu", "Compliant AI"]].map(([n, l]) => (
             <div key={l} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", color: "#D4A84B", fontWeight: 600 }}>{n}</div>
@@ -86,11 +86,11 @@ export default function Home() {
       </section>
 
       {/* PIPELINE */}
-      <section style={{ padding: "4rem 2rem", maxWidth: 1000, margin: "0 auto" }} className="fade-in">
+      <section style={{ padding: "4rem 2rem", maxWidth: 1000, margin: "0 auto" }} className="fade-in section-padding">
         <SectionLabel>Pipeline</SectionLabel>
         <SectionTitle>4-Step AI Pipeline</SectionTitle>
         <p style={{ color: "#A89880", fontSize: "0.95rem", marginBottom: "2.5rem" }}>Computer vision + generative AI + LLM reasoning — working together in seconds.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1px", background: "rgba(212,168,75,0.1)", border: "1px solid rgba(212,168,75,0.1)", borderRadius: "20px", overflow: "hidden" }}>
+        <div className="grid-4-col" style={{ background: "rgba(212,168,75,0.1)", border: "1px solid rgba(212,168,75,0.1)", borderRadius: "20px", overflow: "hidden" }}>
           {PIPELINE.map((p) => (
             <div key={p.n} style={{ background: "#161410", padding: "1.5rem", transition: "background 0.2s" }}
               onMouseEnter={(e) => e.currentTarget.style.background = "#1E1B16"}
@@ -104,10 +104,10 @@ export default function Home() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" style={{ padding: "4rem 2rem", maxWidth: 1000, margin: "0 auto" }} className="fade-in">
+      <section id="features" style={{ padding: "4rem 2rem", maxWidth: 1000, margin: "0 auto" }} className="fade-in section-padding">
         <SectionLabel>Features</SectionLabel>
         <SectionTitle>Everything you need to redesign</SectionTitle>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1px", background: "rgba(212,168,75,0.1)", border: "1px solid rgba(212,168,75,0.1)", borderRadius: "20px", overflow: "hidden", marginTop: "2.5rem" }}>
+        <div className="grid-4-col" style={{ background: "rgba(212,168,75,0.1)", border: "1px solid rgba(212,168,75,0.1)", borderRadius: "20px", overflow: "hidden", marginTop: "2.5rem" }}>
           {FEATURES.map((f) => (
             <div key={f.t} style={{ background: "#161410", padding: "1.5rem", transition: "background 0.2s" }}
               onMouseEnter={(e) => e.currentTarget.style.background = "#1E1B16"}
@@ -136,7 +136,7 @@ export default function Home() {
       {/* FOOTER */}
       <footer style={{ background: "#0F0D0A", borderTop: "1px solid rgba(212,168,75,0.1)", padding: "3.5rem 2rem 2rem", marginTop: "4rem" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "3rem", marginBottom: "3rem" }}>
+          <div className="footer-grid">
             {/* Brand */}
             <div>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.8rem", color: "#D4A84B", marginBottom: "0.75rem" }}>DecorGenie</div>
