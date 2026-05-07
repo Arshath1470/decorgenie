@@ -21,7 +21,10 @@ NEGATIVE_PROMPT = (
     "watermark, text, signature, logo, low quality, blurry, noisy, "
     "moved furniture, missing furniture, replaced furniture, removed wardrobe, "
     "added window, changed door, empty room, changed floor, different bed, "
-    "floating objects, bad proportions, unrealistic scale, demolished walls"
+    "floating objects, bad proportions, unrealistic scale, demolished walls, "
+    "hallucinated mirror reflection, neon in mirror, city in mirror, "
+    "3D wall panels, extreme texture, embossed walls, stone wall, brick wall, "
+    "overly dramatic, dark shadows, underexposed"
 )
 
 
@@ -52,8 +55,8 @@ async def generate_image_stability(prompt: str, negative_prompt: Optional[str] =
                     "text_prompts[0][weight]": "1",
                     "text_prompts[1][text]": negative_prompt or NEGATIVE_PROMPT,
                     "text_prompts[1][weight]": "-1",
-                    "image_strength": "0.50",
-                    "cfg_scale": "8",
+                    "image_strength": "0.55",
+                    "cfg_scale": "7",
                     "steps": "50",
                     "samples": "1",
                 },
