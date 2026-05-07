@@ -49,9 +49,9 @@ async def generate_image_stability(prompt: str, negative_prompt: Optional[str] =
                     "text_prompts[0][weight]": "1",
                     "text_prompts[1][text]": negative_prompt or NEGATIVE_PROMPT,
                     "text_prompts[1][weight]": "-1",
-                    "image_strength": "0.35",
-                    "cfg_scale": "7",
-                    "steps": "40",
+                    "image_strength": "0.65",
+                    "cfg_scale": "6",
+                    "steps": "50",
                     "samples": "1",
                 },
                 files={"init_image": ("room.jpg", img_bytes, "image/jpeg")},
@@ -122,26 +122,37 @@ async def generate_image_dalle(prompt: str) -> str:
 
 
 async def generate_image(prompt: str, negative_prompt: Optional[str] = None, image_base64: Optional[str] = None) -> dict:
-    """Try DALL-E 3 first, then Stability, then Replicate."""
-    if OPENAI_API_KEY:
-        try:
-            url = await generate_image_dalle(prompt)
-            return {"image_url": url, "provider": "dalle3"}
-        except Exception as e:
-            print(f"DALL-E 3 failed: {e}, trying Stability...")
-
-    if STABILITY_API_KEY:
-        try:
-            url = await generate_image_stability(prompt, negative_prompt, image_base64)
-            return {"image_url": url, "provider": "stability"}
-        except Exception as e:
-            print(f"Stability failed: {e}, trying Replicate...")
-
-    if REPLICATE_API_TOKEN:
-        url = await generate_image_replicate(prompt, negative_prompt, image_base64)
-        return {"image_url": url, "provider": "replicate"}
-
-    raise ValueError(
-        "No image generation API configured. "
-        "Set OPENAI_API_KEY, STABILITY_API_KEY or REPLICATE_API_TOKEN in .env"
-    )
+    """
+    If source image provided: use Stability/Replicate img2img (preserves original room).
+    If no source image: try DALL-E 3 first for best quality text-to-image.
+    """
+    if image_base64:
+        # img2img path — skip DALL-E (doesn't support img2img), go straight to Stability
+        if STABILITY_API_KEY:
+            try:
+                url = await generate_image_stability(prompt, negative_prompt, image_base64)
+                return {"image_url": url, "provider": "stability"}
+            except Exception as e:
+                print(f"Stability img2img failed: {e}, trying Replicate...")
+        if REPLICATE_API_TOKEN:
+            url = await generate_image_replicate(prompt, negative_prompt, image_base64)
+            return {"image_url": url, "provider": "replicate"}
+        raise ValueError("No img2img API configured. Set STABILITY_API_KEY or REPLICATE_API_TOKEN.")
+    else:
+        # text-to-image path — DALL-E 3 gives best results
+        if OPENAI_API_KEY:
+            try:
+                url = await generate_image_dalle(prompt)
+                return {"image_url": url, "provider": "dalle3"}
+            except Exception as e:
+                print(f"DALL-E 3 failed: {e}, trying Stability...")
+        if STABILITY_API_KEY:
+            try:
+                url = await generate_image_stability(prompt, negative_prompt, None)
+                return {"image_url": url, "provider": "stability"}
+            except Exception as e:
+                print(f"Stability failed: {e}, trying Replicate...")
+        if REPLICATE_API_TOKEN:
+            url = await generate_image_replicate(prompt, negative_prompt, None)
+            return {"image_url": url, "provider": "replicate"}
+        raise ValueError("No image generation API configured. Set OPENAI_API_KEY, STABILITY_API_KEY or REPLICATE_API_TOKEN.")

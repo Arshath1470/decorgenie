@@ -68,7 +68,7 @@ Return ONLY a JSON object with these exact keys:
     "Material or maintenance insight",
     "Cost-saving or quality-upgrade tip"
   ],
-  "ai_image_prompt": "{style} {room_type}, [describe wall color and treatment, flooring material, main furniture pieces with materials and colors, lighting fixtures, key decor items], natural daylight, warm white ambient lighting, eye-level straight perspective, photorealistic, interior design magazine, hyperrealistic"
+  "ai_image_prompt": "WALL_CEILING_ONLY: same room photo, keep all existing furniture, flooring, and objects exactly as they are, only apply {style} style to: [describe ONLY the new wall color/paint/texture/treatment and ceiling design/false ceiling/cove lighting], do not move or replace any furniture, photorealistic, interior design, natural daylight"
 }}"""
 
 
@@ -108,8 +108,11 @@ async def generate_design(request: DesignRequest) -> dict:
     """Generate a complete interior design plan using Claude."""
 
     img_note = (
-        "I have uploaded a photo of the room. Analyze it carefully — identify the "
-        "current layout, furniture, wall color, flooring, lighting, and any issues."
+        "I have uploaded a photo of the room. Analyze it carefully — identify the current layout, "
+        "furniture, wall color, flooring, lighting, and any issues. "
+        "IMPORTANT: The redesign should ONLY modify the walls and ceiling. "
+        "Keep all existing furniture, flooring, and room contents exactly as they are. "
+        "Focus wall and ceiling recommendations on what will look best with the existing furniture."
         if request.image_base64
         else "No room photo provided. Use typical Indian apartment layout assumptions for this room type."
     )
